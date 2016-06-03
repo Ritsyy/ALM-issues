@@ -3,21 +3,26 @@ package main
 import(
 	"fmt"
 	"log"
-	"github.com/VojtechVitek/go-trello"
 	"strings"
+	"github.com/VojtechVitek/go-trello"
 )
 
 func main() {
 	// New Trello Client
-	appKey := "//your appkey"
-	token := "your token"
+	var appKey, token, username string
+	fmt.Println("Enter AppKey")
+	fmt.Scan(&appKey)
+	fmt.Println("Enter Token")
+	fmt.Scan(&token)
 	trello, err := trello.NewAuthClient(appKey, &token)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// User @trello
-	user, err := trello.Member("your TrelloUserName")
+	fmt.Println("Enter your Trello username")
+	fmt.Scan(&username)
+	user, err := trello.Member(username)
 	if err != nil {
 		log.Fatal(err)
 	}
