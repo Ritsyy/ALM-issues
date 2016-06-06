@@ -7,9 +7,9 @@
 ###How it works
 1. Add yourself to [AtomicOpenShift Roadmap card] (https://trello.com/b/nlLwlKoz/atomicopenshift-roadmap).
 2. Get the API key and token from (https://developers.trello.com/get-started/start-building).
-3. Do
-* go build trello-alm.go
-* go install
-* trello-alm -apikey=//trello_API_key -token=//trello_token -username=//trello_username -BoardName=//By_default AtomicOpenShift    Roadmap -ListName=//By_default Epic Backlog.
+3. go build trello-alm.go
+4. go install
+5. trello-alm -apikey=your_api_key -token=your_token -username=trello_username -BoardName=board_name  -ListName=list_name
+6. default board_name is AtomicOpenShift Roadmap and list name is Epic Backlog
 
 ----
