@@ -4,24 +4,25 @@ import(
 	"fmt"
 	"log"
 	"strings"
+	"flag"
 	"github.com/VojtechVitek/go-trello"
 )
 
 func main() {
 	// New Trello Client
-	var appKey, token, username string
-	fmt.Println("Enter AppKey")
-	fmt.Scan(&appKey)
-	fmt.Println("Enter Token")
-	fmt.Scan(&token)
-	trello, err := trello.NewAuthClient(appKey, &token)
+	var apikey, token, username, BoardName, ListName string
+  flag.StringVar(&apikey, "apikey","", "Trello API key")
+	flag.StringVar(&token, "token","", "Trello Token")
+	flag.StringVar(&BoardName, "BoardName", "AtomicOpenShift Roadmap", "Search the board")
+	flag.StringVar(&ListName, "ListName"	, "Epic Backlog","Search List from the specific Board")
+  flag.StringVar(&username, "username","", "your trello username")
+	flag.Parse()
+	trello, err := trello.NewAuthClient(apikey, &token)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// User @trello
-	fmt.Println("Enter your Trello username")
-	fmt.Scan(&username)
 	user, err := trello.Member(username)
 	if err != nil {
 		log.Fatal(err)
@@ -33,20 +34,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	if len(boards) > 0 {
 		for i:=0; i<len(boards);i++{
 			board := boards[i]
-			if strings.Compare(board.Name, "AtomicOpenShift Roadmap")==0{
+			if strings.Compare(board.Name, BoardName)==0{
 				fmt.Printf("* %v (%v)\n", board.Name, board.ShortUrl)
 				// @trello Board Lists
 				lists, err := board.Lists()
 				if err != nil {
 					log.Fatal(err)
-
 				}
 				for _, list := range lists {
-					if strings.Compare(list.Name, "Epic Backlog")==0{
+					if strings.Compare(list.Name, ListName)==0{
 						fmt.Println("   - ", list.Name)
 
 						// @trello Board List Cards
