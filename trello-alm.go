@@ -11,11 +11,11 @@ import(
 func main() {
 	// New Trello Client
 	var apikey, token, userName, boardId, listName string
-	flag.StringVar(&apikey, "apikey","", "Trello API key")
-	flag.StringVar(&token, "token","", "Trello Token")
+	flag.StringVar(&apikey, "apikey", "", "Trello API key")
+	flag.StringVar(&token, "token", "", "Trello Token")
 	flag.StringVar(&boardId, "boardId", "nlLwlKoz", "Search the board")
-	flag.StringVar(&listName, "listName"	, "Epic Backlog","Search List from the specific Board")
-	flag.StringVar(&userName, "userName","", "your trello username")
+	flag.StringVar(&listName, "listName", "Epic Backlog","Search List from the specific Board")
+	flag.StringVar(&userName, "userName", "", "your trello username")
 	flag.Parse()
 	trello, err := trello.NewAuthClient(apikey, &token)
 	if err != nil {
