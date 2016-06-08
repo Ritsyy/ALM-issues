@@ -13,3 +13,12 @@
 6. default BoardName is AtomicOpenShift Roadmap and list name is Epic Backlog
 
 ----
+
+###Fetching Issues from Github
+(In this case, Fetching the query: is:open is:issue user:arquillian author:aslakknutsen)
+
+----
+
+###How it works
+1. go install
+2. github-alm
