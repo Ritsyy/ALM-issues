@@ -25,10 +25,10 @@ func main() {
 	for l, _ := range issues.Issues {
 		res1, _ := json.Marshal(issues.Issues[l].URL)
 		res2, _ := json.Marshal(issues.Issues[l].Title)
-    res3, _ := json.Marshal(issues.Issues[l].Labels[0].Name)
+                res3, _ := json.Marshal(issues.Issues[l].Labels[0].Name)
 		fmt.Println("issue url: ", string(res1))
 		fmt.Println("title: ", string(res2))
-    fmt.Println("labels: ", string(res3))
+                fmt.Println("labels: ", string(res3))
 	}
 
 	if err != nil {
