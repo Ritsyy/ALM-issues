@@ -19,16 +19,17 @@ func main() {
 		},
 	}
 
-	issues, _, err := client.Search.Issues(query, opts)
-	res, _ := json.Marshal(issues.Total)
-	fmt.Println(string(res))
-	for l, _ := range issues.Issues {
-		res1, _ := json.Marshal(issues.Issues[l].URL)
-		res2, _ := json.Marshal(issues.Issues[l].Title)
-                res3, _ := json.Marshal(issues.Issues[l].Labels[0].Name)
-		fmt.Println("issue url: ", string(res1))
-		fmt.Println("title: ", string(res2))
-                fmt.Println("labels: ", string(res3))
+	result, _, err := client.Search.Issues(query, opts)
+	totalCount, _ := json.Marshal(result.Total)
+	fmt.Println(string(totalCount))
+       issues := result.Issues
+	for l, _ := range issues {
+		url, _ := json.Marshal(issues[l].URL)
+		title, _ := json.Marshal(issues[l].Title)
+               labels, _ := json.Marshal(issues[l].Labels[0].Name)
+		fmt.Println("issue url: ", string(url))
+		fmt.Println("title: ", string(title))
+               fmt.Println("labels: ", string(labels))
 	}
 
 	if err != nil {
