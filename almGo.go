@@ -11,35 +11,35 @@ import (
 )
 
 type Configuration struct {
-	apiKey   string
-	token    string
-	userName string
+	ApiKey   string
+	Token    string
+	UserName string
 }
 
 type TrelloIssueProvider struct {
 	Configuration
-	boardId  string
-	listName string
+	BoardId  string
+	ListName string
 }
 
 type GithubIssueProvider struct {
-	query string
+	Query string
 }
 
 func (t TrelloIssueProvider) FetchData() {
-	trello, err := trello.NewAuthClient(t.Configuration.apiKey, &t.Configuration.token)
+	trello, err := trello.NewAuthClient(t.Configuration.ApiKey, &t.Configuration.Token)
 	if err != nil {
 		log.Fatal(err)
 	}
 	// User @trello
-	user, err := trello.Member(t.Configuration.userName)
+	user, err := trello.Member(t.Configuration.UserName)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(user.FullName)
 
 	// @trello Boards
-	board, err := trello.Board(t.boardId)
+	board, err := trello.Board(t.BoardId)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func (t TrelloIssueProvider) FetchData() {
 		log.Fatal(err)
 	}
 	for _, list := range lists {
-		if strings.Compare(list.Name, t.listName) == 0 {
+		if strings.Compare(list.Name, t.ListName) == 0 {
 			fmt.Println("   - ", list.Name)
 			// @trello Board List Cards
 			cards, _ := list.Cards()
@@ -70,7 +70,7 @@ func (g GithubIssueProvider) FetchData() {
 		},
 	}
 
-	result, _, err := client.Search.Issues(g.query, opts)
+	result, _, err := client.Search.Issues(g.Query, opts)
 	totalCount, _ := json.Marshal(result.Total)
 	fmt.Println("Total Count of Issues", string(totalCount))
 	issues := result.Issues
@@ -92,16 +92,24 @@ type IssueProvider interface {
 }
 
 func main() {
-	var apikey, token, userName, boardId, listName string
-	flag.StringVar(&apikey, "apikey", "", "Trello API key")
+	var tool, apiKey, token, userName, boardId, listName, query string
+	flag.StringVar(&tool, "tool", "", "Choose the tool from which you want to search")
+	flag.StringVar(&query, "query", "is:open is:issue user:arquillian author:aslakknutsen", "what you want to search on github")
+	flag.StringVar(&apiKey, "apiKey", "", "Trello API key")
 	flag.StringVar(&token, "token", "", "Trello Token")
 	flag.StringVar(&boardId, "boardId", "nlLwlKoz", "Search the board")
 	flag.StringVar(&listName, "listName", "Epic Backlog", "Search List from the specific Board")
 	flag.StringVar(&userName, "userName", "", "your trello username")
 	flag.Parse()
-	issueproviders := []IssueProvider{TrelloIssueProvider{Configuration: Configuration{apiKey: apikey, token: token, userName: userName}, boardId: boardId, listName: listName}, GithubIssueProvider{query: "is:open is:issue user:arquillian author:aslakknutsen"}}
-
-	for _, issueprovider := range issueproviders {
-		issueprovider.FetchData()
+	if tool == "github" {
+		issueproviders := []IssueProvider{GithubIssueProvider{Query: query}}
+		for _, issueprovider := range issueproviders {
+			issueprovider.FetchData()
+		}
+	} else if tool == "trello" {
+		issueproviders := []IssueProvider{TrelloIssueProvider{Configuration: Configuration{ApiKey: apiKey, Token: token, UserName: userName}, BoardId: boardId, ListName: listName}}
+		for _, issueprovider := range issueproviders {
+			issueprovider.FetchData()
+		}
 	}
 }
