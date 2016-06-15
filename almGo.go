@@ -33,8 +33,8 @@ type Issue struct {
 
 func PrintIssue(issue []Issue) {
 	for i := range issue {
-		fmt.Println("issue url: ", string(issue[i].title))
-		fmt.Println("title: ", string(issue[i].description))
+		fmt.Println("title: ", string(issue[i].title))
+		fmt.Println("issue url: ", string(issue[i].description))
 	}
 }
 
@@ -82,7 +82,6 @@ func (g GithubIssueProvider) FetchData() []Issue {
 
 	result, _, err := client.Search.Issues(g.Query, opts)
 	totalCount, _ := json.Marshal(result.Total)
-	fmt.Println("Total Count of Issues", string(totalCount))
 	issues := result.Issues
 	for l, _ := range issues {
 		url := issues[l].URL
@@ -112,16 +111,12 @@ func main() {
 	flag.StringVar(&userName, "userName", "", "your trello username")
 	flag.Parse()
 	if tool == "github" {
-		issueproviders := []IssueProvider{GithubIssueProvider{Query: query}}
-		for _, issueprovider := range issueproviders {
-			printarr := issueprovider.FetchData()
-			PrintIssue(printarr)
-		}
+		issueprovider := GithubIssueProvider{Query: query}
+		printarr := issueprovider.FetchData()
+		PrintIssue(printarr)
 	} else if tool == "trello" {
-		issueproviders := []IssueProvider{TrelloIssueProvider{Configuration: Configuration{ApiKey: apiKey, Token: token, UserName: userName}, BoardId: boardId, ListName: listName}}
-		for _, issueprovider := range issueproviders {
-			printarr := issueprovider.FetchData()
-			PrintIssue(printarr)
-		}
+		issueprovider := TrelloIssueProvider{Configuration: Configuration{ApiKey: apiKey, Token: token, UserName: userName}, BoardId: boardId, ListName: listName}
+		printarr := issueprovider.FetchData()
+		PrintIssue(printarr)
 	}
 }
