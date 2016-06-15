@@ -26,15 +26,18 @@
 ----
 
 ###Fetching Issues from Github and Trello
-(In this case, Fetching the query: is:open is:issue user:arquillian author:aslakknutsen and Fetching "Epic Backlog" list from "atomicopenshift-roadmap" Trello Board)
 
 ----
 
 ###How it works
 1. go install
-2. goalm -apikey=your_api_key -token=your_token -username=trello_username -BoardName=board_name  -ListName=list_name
-3. default BoardName is AtomicOpenShift Roadmap and list name is Epic Backlog
-4. for open trello boards you can access as:
-  * goalm -username=trello_username
+3. for trello
+  * goalm -tool=trello -apikey=your_api_key -token=your_token -username=trello_username -BoardName=board_name -ListName=list_name
+  * default BoardName is AtomicOpenShift Roadmap and list name is Epic Backlog
+4. for github
+  * goalm -tool=github -query=your_search_query
+  * default query is "query: is:open is:issue user:arquillian author:aslakknutsen"
+5. for open trello boards you can access as:
+  * goalm -tool=trello -username=trello_username -BoardName=board_name
 
 ----
