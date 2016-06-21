@@ -62,8 +62,8 @@ func (t TrelloIssueProvider) FetchData(c chan Issue) {
 				description := card.Desc
 				issueInstance := Issue{cardName, description}
 				c <- issueInstance
-				PrintIssue(<-c)
 			}
+			close(c)
 		}
 	}
 }
@@ -83,8 +83,8 @@ func (g GithubIssueProvider) FetchData(c chan Issue) {
 		title := issues[l].Title
 		issueInstance := Issue{*title, *url}
 		c <- issueInstance
-		PrintIssue(<-c)
 	}
+	close(c)
 	if err != nil {
 		fmt.Printf("error: %v\n\n", err)
 	}
@@ -109,12 +109,20 @@ func main() {
 		issueproviders := []IssueProvider{GithubIssueProvider{Query: query}}
 		for _, issueprovider := range issueproviders {
 			go issueprovider.FetchData(c)
+			fmt.Println("fetched the issues")
+			for i := range c {
+				PrintIssue(i)
+			}
 		}
 	} else if tool == "trello" {
 		c := make(chan Issue)
 		issueproviders := []IssueProvider{TrelloIssueProvider{Configuration: Configuration{ApiKey: apiKey, Token: token, UserName: userName}, BoardId: boardId, ListName: listName}}
 		for _, issueprovider := range issueproviders {
 			go issueprovider.FetchData(c)
+			fmt.Println("fetched the issues")
+			for i := range c {
+				PrintIssue(i)
+			}
 		}
 	}
 }
