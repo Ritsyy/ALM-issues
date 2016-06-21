@@ -30,16 +30,13 @@ type Issue struct {
 	description string
 }
 
-func PrintIssue(issue []Issue) {
-	for i := range issue {
-		fmt.Println("title: ", string(issue[i].title))
-		fmt.Println("issue: ", string(issue[i].description))
-		fmt.Println("")
-	}
+func PrintIssue(issue Issue) {
+	fmt.Println("title: ", string(issue.title))
+	fmt.Println("issue: ", string(issue.description))
+	fmt.Println("")
 }
 
-func (t TrelloIssueProvider) FetchData(c chan []Issue) {
-	var issueArr []Issue
+func (t TrelloIssueProvider) FetchData(c chan Issue) {
 	trello, err := trello.NewAuthClient(t.Configuration.ApiKey, &t.Configuration.Token)
 	if err != nil {
 		log.Fatal(err)
@@ -64,15 +61,14 @@ func (t TrelloIssueProvider) FetchData(c chan []Issue) {
 				cardName := card.Name
 				description := card.Desc
 				issueInstance := Issue{cardName, description}
-				issueArr = append(issueArr, issueInstance)
+				c <- issueInstance
+				PrintIssue(<-c)
 			}
-			c <- issueArr
 		}
 	}
 }
 
-func (g GithubIssueProvider) FetchData(c chan []Issue) {
-	var issueArr []Issue
+func (g GithubIssueProvider) FetchData(c chan Issue) {
 	client := github.NewClient(nil)
 	opts := &github.SearchOptions{
 		ListOptions: github.ListOptions{
@@ -86,16 +82,16 @@ func (g GithubIssueProvider) FetchData(c chan []Issue) {
 		url := issues[l].URL
 		title := issues[l].Title
 		issueInstance := Issue{*title, *url}
-		issueArr = append(issueArr, issueInstance)
+		c <- issueInstance
+		PrintIssue(<-c)
 	}
-	c <- issueArr
 	if err != nil {
 		fmt.Printf("error: %v\n\n", err)
 	}
 }
 
 type IssueProvider interface {
-	FetchData(chan []Issue)
+	FetchData(chan Issue)
 }
 
 func main() {
@@ -109,22 +105,16 @@ func main() {
 	flag.StringVar(&userName, "userName", "", "your trello username")
 	flag.Parse()
 	if tool == "github" {
-		var printarr []Issue
-		c := make(chan []Issue)
+		c := make(chan Issue)
 		issueproviders := []IssueProvider{GithubIssueProvider{Query: query}}
 		for _, issueprovider := range issueproviders {
 			go issueprovider.FetchData(c)
-			printarr = <-c
 		}
-		PrintIssue(printarr)
 	} else if tool == "trello" {
-		var printarr []Issue
-		c := make(chan []Issue)
+		c := make(chan Issue)
 		issueproviders := []IssueProvider{TrelloIssueProvider{Configuration: Configuration{ApiKey: apiKey, Token: token, UserName: userName}, BoardId: boardId, ListName: listName}}
 		for _, issueprovider := range issueproviders {
 			go issueprovider.FetchData(c)
-			printarr = <-c
 		}
-		PrintIssue(printarr)
 	}
 }
