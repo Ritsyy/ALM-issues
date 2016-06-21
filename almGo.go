@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/VojtechVitek/go-trello"
@@ -34,11 +33,12 @@ type Issue struct {
 func PrintIssue(issue []Issue) {
 	for i := range issue {
 		fmt.Println("title: ", string(issue[i].title))
-		fmt.Println("issue url: ", string(issue[i].description))
+		fmt.Println("issue: ", string(issue[i].description))
+		fmt.Println("")
 	}
 }
 
-func (t TrelloIssueProvider) FetchData() []Issue {
+func (t TrelloIssueProvider) FetchData(c chan []Issue) {
 	var issueArr []Issue
 	trello, err := trello.NewAuthClient(t.Configuration.ApiKey, &t.Configuration.Token)
 	if err != nil {
@@ -66,12 +66,12 @@ func (t TrelloIssueProvider) FetchData() []Issue {
 				issueInstance := Issue{cardName, description}
 				issueArr = append(issueArr, issueInstance)
 			}
+			c <- issueArr
 		}
 	}
-	return issueArr
 }
 
-func (g GithubIssueProvider) FetchData() []Issue {
+func (g GithubIssueProvider) FetchData(c chan []Issue) {
 	var issueArr []Issue
 	client := github.NewClient(nil)
 	opts := &github.SearchOptions{
@@ -81,7 +81,6 @@ func (g GithubIssueProvider) FetchData() []Issue {
 	}
 
 	result, _, err := client.Search.Issues(g.Query, opts)
-	totalCount, _ := json.Marshal(result.Total)
 	issues := result.Issues
 	for l, _ := range issues {
 		url := issues[l].URL
@@ -89,15 +88,14 @@ func (g GithubIssueProvider) FetchData() []Issue {
 		issueInstance := Issue{*title, *url}
 		issueArr = append(issueArr, issueInstance)
 	}
-
+	c <- issueArr
 	if err != nil {
 		fmt.Printf("error: %v\n\n", err)
 	}
-	return issueArr
 }
 
 type IssueProvider interface {
-	FetchData() []Issue
+	FetchData(chan []Issue)
 }
 
 func main() {
@@ -111,12 +109,22 @@ func main() {
 	flag.StringVar(&userName, "userName", "", "your trello username")
 	flag.Parse()
 	if tool == "github" {
-		issueprovider := GithubIssueProvider{Query: query}
-		printarr := issueprovider.FetchData()
+		var printarr []Issue
+		c := make(chan []Issue)
+		issueproviders := []IssueProvider{GithubIssueProvider{Query: query}}
+		for _, issueprovider := range issueproviders {
+			go issueprovider.FetchData(c)
+			printarr = <-c
+		}
 		PrintIssue(printarr)
 	} else if tool == "trello" {
-		issueprovider := TrelloIssueProvider{Configuration: Configuration{ApiKey: apiKey, Token: token, UserName: userName}, BoardId: boardId, ListName: listName}
-		printarr := issueprovider.FetchData()
+		var printarr []Issue
+		c := make(chan []Issue)
+		issueproviders := []IssueProvider{TrelloIssueProvider{Configuration: Configuration{ApiKey: apiKey, Token: token, UserName: userName}, BoardId: boardId, ListName: listName}}
+		for _, issueprovider := range issueproviders {
+			go issueprovider.FetchData(c)
+			printarr = <-c
+		}
 		PrintIssue(printarr)
 	}
 }
