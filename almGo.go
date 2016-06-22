@@ -104,15 +104,15 @@ func main() {
 	flag.StringVar(&listName, "listName", "Epic Backlog", "Search List from the specific Board")
 	flag.StringVar(&userName, "userName", "", "your trello username")
 	flag.Parse()
+	var issueprovider IssueProvider
 	c := make(chan Issue)
 	if tool == "github" {
-		issueprovider := GithubIssueProvider{Query: query}
-		go issueprovider.FetchData(c)
+		issueprovider = GithubIssueProvider{Query: query}
 	} else if tool == "trello" {
-		issueprovider := TrelloIssueProvider{Configuration: Configuration{ApiKey: apiKey, Token: token, UserName: userName}, BoardId: boardId, ListName: listName}
-		go issueprovider.FetchData(c)
+		issueprovider = TrelloIssueProvider{Configuration: Configuration{ApiKey: apiKey, Token: token, UserName: userName}, BoardId: boardId, ListName: listName}
 	}
-	for i:= range c{
+	go issueprovider.FetchData(c)
+	for i := range c {
 		PrintIssue(i)
 	}
 }
